@@ -1,3 +1,5 @@
+package assignments.spaceship;
+
 public class SpaceShip {
 
     private String ner;
@@ -9,28 +11,24 @@ public class SpaceShip {
         this.ner = ner;
         this.tulsh = 100;
         this.zorchigch = 0;
-        this.km = 0;
+        this.km = 0.0;
     }
 
     public String zorchigchAvah(int too) {
         if (zorchigch + too > 10) {
             return "Багтаамж хэтэрлээ!";
         }
-
         zorchigch += too;
         return too + " зорчигч нэмэгдлээ";
     }
 
     public String nisleg(double zai) {
-        double heregteiTulsh = zai * 0.5;
-
-        if (tulsh < heregteiTulsh) {
+        double requiredTulsh = zai * 0.5;
+        if (tulsh < requiredTulsh) {
             return "Түлш дутуу!";
         }
-
-        tulsh -= (int) heregteiTulsh;
+        tulsh -= requiredTulsh;
         km += zai;
-
         return "Нислэг амжилттай! " + zai + " км нисэв";
     }
 

@@ -1,3 +1,5 @@
+package assignments.commsystem;
+
 import java.util.ArrayList;
 
 public class CommSystem {
@@ -18,17 +20,11 @@ public class CommSystem {
         if (offline) {
             return "📡 Офлайн!";
         }
-
         signalHvch -= 5;
-
-        // эхлээд log-д нэмнэ (шаардлагаар энэ мессеж орно)
-        log.add("→ " + hvleenAvagch + ": " + mesg);
-
-        // дараа нь offline болгох check
         if (signalHvch < 10) {
             offline = true;
         }
-
+        log.add("→ " + hvleenAvagch + ": " + mesg);
         return "Илгээлээ: " + hvleenAvagch;
     }
 
@@ -43,25 +39,19 @@ public class CommSystem {
 
     public String logHarah(int n) {
         StringBuilder sb = new StringBuilder();
-
-        int size = log.size();
-        int start = (n > size) ? 0 : size - n;
-
-        for (int i = start; i < size; i++) {
+        int start = Math.max(0, log.size() - n);
+        for (int i = start; i < log.size(); i++) {
             sb.append(log.get(i));
-            if (i < size - 1) {
+            if (i != log.size() - 1) {
                 sb.append("\n");
             }
         }
-
         return sb.toString();
     }
 
     @Override
     public String toString() {
         String status = offline ? "OFFLINE" : "ONLINE";
-
-        return "📡 " + stationNer + " [" + status + "] Signal: "
-                + signalHvch + "% | Лог: " + log.size() + " мессеж";
+        return "📡 " + stationNer + " [" + status + "] Signal: " + signalHvch + "% | Лог: " + log.size() + " мессеж";
     }
 }

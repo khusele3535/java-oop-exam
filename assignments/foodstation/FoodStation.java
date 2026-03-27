@@ -1,3 +1,5 @@
+package assignments.foodstation;
+
 import java.util.ArrayList;
 
 public class FoodStation {
@@ -21,28 +23,21 @@ public class FoodStation {
 
     public String zahialga(String hool) {
         int index = menu.indexOf(hool);
-
         if (index == -1) {
             return "❌ Цэсэнд байхгүй";
         }
-
         niitOrlogo += uneNuud.get(index);
         return "✅ " + hool + " бэлтгэж байна";
     }
 
     public String hamgiinHvnstei() {
-        if (menu.isEmpty()) {
-            return "Цэс хоосон";
-        }
-
+        if (menu.isEmpty()) return "Цэс хоосон";
         int maxIndex = 0;
-
         for (int i = 1; i < uneNuud.size(); i++) {
             if (uneNuud.get(i) > uneNuud.get(maxIndex)) {
                 maxIndex = i;
             }
         }
-
         return menu.get(maxIndex);
     }
 
