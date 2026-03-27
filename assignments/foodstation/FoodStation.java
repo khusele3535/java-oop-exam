@@ -2,29 +2,52 @@ import java.util.ArrayList;
 
 public class FoodStation {
 
-    // TODO: private талбаруудыг зарлана уу
-    // - ner (String)
-    // - menu (ArrayList<String>) — хоолны нэрсийн жагсаалт
-    // - uneNuud (ArrayList<Integer>) — хоолны үнүүдийн жагсаалт (menu-тэй ижил индекстэй)
-    // - niitOrlogo (int, анхны утга 0)
+    private String ner;
+    private ArrayList<String> menu;
+    private ArrayList<Integer> uneNuud;
+    private int niitOrlogo;
 
-    // TODO: Constructor бичнэ үү
-    // FoodStation(String ner)
-    // - menu болон uneNuud-ийг шинэ ArrayList-ээр үүсгэнэ
+    public FoodStation(String ner) {
+        this.ner = ner;
+        this.menu = new ArrayList<>();
+        this.uneNuud = new ArrayList<>();
+        this.niitOrlogo = 0;
+    }
 
-    // TODO: tsesNemeh(String hool, int une) method бичнэ үү
-    // - menu-д хоолны нэр, uneNuud-д үнийг нэмнэ
+    public void tsesNemeh(String hool, int une) {
+        menu.add(hool);
+        uneNuud.add(une);
+    }
 
-    // TODO: zahialga(String hool) method бичнэ үү
-    // - menu.indexOf(hool) ашиглан хоол хайна
-    // - Олдохгүй бол "❌ Цэсэнд байхгүй" буцаана
-    // - Олдвол niitOrlogo-д үнийг нэмж, "✅ hool бэлтгэж байна" буцаана
+    public String zahialga(String hool) {
+        int index = menu.indexOf(hool);
 
-    // TODO: hamgiinHvnstei() method бичнэ үү
-    // - uneNuud дотроос хамгийн их утгыг олж, тухайн индексийн хоолны нэрийг буцаана
-    // - Хэрэв цэс хоосон бол "Цэс хоосон" буцаана
+        if (index == -1) {
+            return "❌ Цэсэнд байхгүй";
+        }
 
-    // TODO: toString() method бичнэ үү
-    // Формат: "🍜 [нэр] | Цэс: X хоол | Орлого: Y₮"
+        niitOrlogo += uneNuud.get(index);
+        return "✅ " + hool + " бэлтгэж байна";
+    }
 
+    public String hamgiinHvnstei() {
+        if (menu.isEmpty()) {
+            return "Цэс хоосон";
+        }
+
+        int maxIndex = 0;
+
+        for (int i = 1; i < uneNuud.size(); i++) {
+            if (uneNuud.get(i) > uneNuud.get(maxIndex)) {
+                maxIndex = i;
+            }
+        }
+
+        return menu.get(maxIndex);
+    }
+
+    @Override
+    public String toString() {
+        return "🍜 " + ner + " | Цэс: " + menu.size() + " хоол | Орлого: " + niitOrlogo + "₮";
+    }
 }
