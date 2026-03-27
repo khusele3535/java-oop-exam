@@ -1,0 +1,149 @@
+name: Java OOP Exam Auto-Grader
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    name: Шалгалт шалгах
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download JUnit
+        run: |
+          mkdir -p lib
+          curl -sL "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar" -o lib/junit-platform-console-standalone-1.10.2.jar
+
+      # ─── Даалгавар 1: SpaceShip ───
+      - name: "Compile: SpaceShip"
+        id: compile_spaceship
+        continue-on-error: true
+        run: |
+          mkdir -p build/spaceship
+          javac -d build/spaceship assignments/spaceship/SpaceShip.java
+
+      - name: "Test: SpaceShip"
+        id: test_spaceship
+        if: steps.compile_spaceship.outcome == 'success'
+        continue-on-error: true
+        run: |
+          javac -cp build/spaceship:lib/junit-platform-console-standalone-1.10.2.jar -d build/spaceship tests/SpaceShipTest.java
+          java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path build/spaceship --select-class SpaceShipTest 2>&1 | tee build/spaceship/test_output.txt
+
+      - name: "AI Detect: SpaceShip"
+        id: ai_spaceship
+        continue-on-error: true
+        run: |
+          python3 scripts/ai_detector.py assignments/spaceship/SpaceShip.java --json > build/spaceship/ai_report.json 2>&1 || true
+          cat build/spaceship/ai_report.json
+
+      # ─── Даалгавар 2: FoodStation ───
+      - name: "Compile: FoodStation"
+        id: compile_foodstation
+        continue-on-error: true
+        run: |
+          mkdir -p build/foodstation
+          javac -d build/foodstation assignments/foodstation/FoodStation.java
+
+      - name: "Test: FoodStation"
+        id: test_foodstation
+        if: steps.compile_foodstation.outcome == 'success'
+        continue-on-error: true
+        run: |
+          javac -cp build/foodstation:lib/junit-platform-console-standalone-1.10.2.jar -d build/foodstation tests/FoodStationTest.java
+          java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path build/foodstation --select-class FoodStationTest 2>&1 | tee build/foodstation/test_output.txt
+
+      - name: "AI Detect: FoodStation"
+        id: ai_foodstation
+        continue-on-error: true
+        run: |
+          python3 scripts/ai_detector.py assignments/foodstation/FoodStation.java --json > build/foodstation/ai_report.json 2>&1 || true
+          cat build/foodstation/ai_report.json
+
+      # ─── Даалгавар 3: CommSystem ───
+      - name: "Compile: CommSystem"
+        id: compile_commsystem
+        continue-on-error: true
+        run: |
+          mkdir -p build/commsystem
+          javac -d build/commsystem assignments/commsystem/CommSystem.java
+
+      - name: "Test: CommSystem"
+        id: test_commsystem
+        if: steps.compile_commsystem.outcome == 'success'
+        continue-on-error: true
+        run: |
+          javac -cp build/commsystem:lib/junit-platform-console-standalone-1.10.2.jar -d build/commsystem tests/CommSystemTest.java
+          java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path build/commsystem --select-class CommSystemTest 2>&1 | tee build/commsystem/test_output.txt
+
+      - name: "AI Detect: CommSystem"
+        id: ai_commsystem
+        continue-on-error: true
+        run: |
+          python3 scripts/ai_detector.py assignments/commsystem/CommSystem.java --json > build/commsystem/ai_report.json 2>&1 || true
+          cat build/commsystem/ai_report.json
+
+      # ─── Summary ───
+      - name: "📊 Дүн гаргах"
+        if: always()
+        run: |
+          # Helper function
+          get_status() {
+            local compile=$1 test=$2
+            if [ "$compile" != "success" ]; then echo "❌ Compile Error"; return; fi
+            if [ "$test" = "success" ]; then echo "✅ Pass"; return; fi
+            if [ "$test" = "failure" ]; then echo "⚠️ Partial"; return; fi
+            echo "⏭️ Skipped"
+          }
+
+          get_ai() {
+            local file=$1
+            if [ -f "$file" ]; then
+              level=$(python3 -c "import json; d=json.load(open('$file')); print(d.get('level','?'))" 2>/dev/null || echo "?")
+              score=$(python3 -c "import json; d=json.load(open('$file')); print(d.get('score','?'))" 2>/dev/null || echo "?")
+              case $level in
+                LOW) echo "✅ LOW ($score)" ;;
+                MEDIUM) echo "⚠️ MEDIUM ($score)" ;;
+                HIGH) echo "🚨 HIGH ($score)" ;;
+                *) echo "❓ Unknown" ;;
+              esac
+            else
+              echo "❓ N/A"
+            fi
+          }
+
+          S1=$(get_status "${{ steps.compile_spaceship.outcome }}" "${{ steps.test_spaceship.outcome }}")
+          S2=$(get_status "${{ steps.compile_foodstation.outcome }}" "${{ steps.test_foodstation.outcome }}")
+          S3=$(get_status "${{ steps.compile_commsystem.outcome }}" "${{ steps.test_commsystem.outcome }}")
+
+          A1=$(get_ai "build/spaceship/ai_report.json")
+          A2=$(get_ai "build/foodstation/ai_report.json")
+          A3=$(get_ai "build/commsystem/ai_report.json")
+
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🚀 Java OOP Шалгалтын Дүн
+
+          | Даалгавар | Оноо | Компайл & Тест | AI Detection |
+          |-----------|------|----------------|--------------|
+          | 1. SpaceShip | 25 оноо | $S1 | $A1 |
+          | 2. FoodStation | 30 оноо | $S2 | $A2 |
+          | 3. CommSystem | 35 оноо | $S3 | $A3 |
+
+          ---
+          *Автомат шалгагч — $(date '+%Y-%m-%d %H:%M UTC')*
+          EOF
